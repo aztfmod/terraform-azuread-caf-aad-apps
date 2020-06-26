@@ -16,7 +16,7 @@ variable aad_app {
   type = object({
     convention              = string
     useprefix               = bool
-    ad_application_name     = string
+    application_name        = string
     password_expire_in_days = number
 
     keyvault = object({
@@ -30,20 +30,20 @@ variable aad_app {
   })
 
   default = {
-    convention              = "cafrandom"
-    useprefix               = false
-    ad_application_name     = ""
-    password_expire_in_days = 180
-    keyvault                = null
+    convention                = "cafrandom"
+    useprefix                 = false
+    application_name          = null
+    password_expire_in_days   = 180
+    keyvault                  = null
   }
 }
 
 variable aad_api_permission {
   type = map(object({
-    resource_app_id = string
-    rsource_access = map(object({
-      id   = string
-      type = string
+    resource_app_id     = string
+    rsource_access      = map(object({
+      id    = string
+      type  = string
     }))
   }))
 

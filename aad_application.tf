@@ -1,27 +1,56 @@
-resource "azurecaf_naming_convention" "aad_apps" {
-  for_each = local.aad_apps
 
-  name          = each.value.ad_application_name
-  resource_type = "rg" # workaround until support for aad apps
+#
+# AAD Applications
+#
+
+locals {
+    # check structure, add missing fields
+    aad_apps_all_attributes = {
+        for key, aad_app in var.aad_apps : key => merge(var.aad_app, aad_app)
+    }
+
+    aad_apps_to_create = {
+      for aad_application in 
+        flatten(
+          [
+            for key, aad_app in local.aad_apps_all_attributes : {
+              aad_app_key             = key
+              convention              = lookup(aad_app, "convention", "cafrandom")
+              useprefix               = lookup(aad_app, "useprefix", true)
+              application_name        = lookup(aad_app, "application_name", null)
+              password_expire_in_days = lookup(aad_app, "password_expire_in_days", 90)
+              tenant_name             = lookup(aad_app, "keyvault", data.azurerm_client_config.current.tenant_id)
+              keyvault                = lookup(aad_app, "keyvault", {})
+            } if lookup(aad_app, "app_application_id", null) == null
+          ]
+        ) : aad_application.aad_app_key => aad_application
+    }
+}
+
+resource "azurecaf_naming_convention" "aad_apps" {
+  for_each = local.aad_apps_to_create
+
+  name          = each.value.application_name
+  resource_type = "rg"      # workaround until support for aad apps
   convention    = each.value.convention
   prefix        = each.value.useprefix ? var.prefix : null
 }
 
 resource "azuread_application" "aad_apps" {
   for_each = {
-    for key, app in local.aad_apps : key => app
+    for key, app in local.aad_apps_to_create : key => app
   }
 
-  name = azurecaf_naming_convention.aad_apps[each.key].result
-
+  name    = azurecaf_naming_convention.aad_apps[each.key].result
+  
   owners = [
     data.azurerm_client_config.current.object_id
   ]
 
-  reply_urls = lookup(each.value, "reply_urls", null)
+  reply_urls  = lookup(each.value, "reply_urls", null)
 
   dynamic "required_resource_access" {
-    for_each = {
+    for_each  = {
       for key, permission in lookup(var.aad_api_permissions, each.key, []) : key => permission
     }
 
@@ -34,8 +63,8 @@ resource "azuread_application" "aad_apps" {
         }
 
         content {
-          id   = resource_access.value.id
-          type = resource_access.value.type
+          id    = resource_access.value.id
+          type  = resource_access.value.type 
         }
       }
     }
@@ -49,21 +78,27 @@ resource "azuread_application" "aad_apps" {
 }
 
 resource "azuread_service_principal" "aad_apps" {
-  for_each = local.aad_apps
+  for_each = local.aad_apps_to_create
 
   application_id = azuread_application.aad_apps[each.key].application_id
 }
 
 resource "azuread_service_principal_password" "aad_apps" {
-  for_each = local.aad_apps
+  for_each = local.aad_apps_to_create
 
   service_principal_id = azuread_service_principal.aad_apps[each.key].id
   value                = random_password.aad_apps[each.key].result
-  end_date_relative    = "${each.value.password_expire_in_days * 24}h"
+  end_date_relative     = format("%sh", each.value.password_expire_in_days * 24)
+
+  lifecycle {
+    ignore_changes = [
+      end_date_relative, value
+    ]
+  }
 }
 
 resource "random_password" "aad_apps" {
-  for_each = local.aad_apps
+  for_each = local.aad_apps_to_create
 
   length  = 250
   special = false
