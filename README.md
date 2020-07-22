@@ -1,6 +1,9 @@
 [![VScodespaces](https://img.shields.io/endpoint?url=https%3A%2F%2Faka.ms%2Fvso-badge)](https://online.visualstudio.com/environments/new?name=terraform-azurerm-caf-aad-apps&repo=aztfmod/terraform-azurerm-caf-aad-apps)
+[![Gitter](https://badges.gitter.im/aztfmod/community.svg)](https://gitter.im/aztfmod/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 # Creates an Azure AD Application Registration
+
+Creates an Azure AD application registration and stores its secrets to an Azure Key Vault.
 
 <!--- BEGIN_TF_DOCS --->
 ## Requirements

@@ -2,15 +2,23 @@ provider azurerm {
   features {}
 }
 
+terraform {
+  required_providers {
+    azurecaf = {
+      source = "aztfmod/azurecaf"
+    }
+  }
+}
+
 data azurerm_client_config current {}
 
 module aad_apps {
-  source = "../"
+  source = "../.."
 
   aad_apps            = local.aad_apps
   aad_api_permissions = local.aad_api_permissions
   prefix              = local.prefix
-  keyvaults           = local.keyvaults
+  keyvaults           = azurerm_key_vault.keyvault
 }
 
 resource "azurecaf_naming_convention" "rg_test" {
