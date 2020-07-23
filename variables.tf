@@ -1,4 +1,6 @@
-variable prefix {}
+variable prefix {
+  description = "Prefixes to be used in the name of the App registration"
+}
 
 variable keyvaults {
   description = "Map of deployed azurerm_key_vault"
@@ -13,6 +15,7 @@ variable aad_api_permissions {
 }
 
 variable aad_app {
+  description = "Object to create Azure Active Directory application"
   type = object({
     convention              = string
     useprefix               = bool
@@ -30,20 +33,21 @@ variable aad_app {
   })
 
   default = {
-    convention                = "cafrandom"
-    useprefix                 = false
-    application_name          = null
-    password_expire_in_days   = 180
-    keyvault                  = null
+    convention              = "cafrandom"
+    useprefix               = false
+    application_name        = null
+    password_expire_in_days = 180
+    keyvault                = null
   }
 }
 
 variable aad_api_permission {
+  description = "Object to provide API access to an Azure Active Directory application"
   type = map(object({
-    resource_app_id     = string
-    rsource_access      = map(object({
-      id    = string
-      type  = string
+    resource_app_id = string
+    rsource_access = map(object({
+      id   = string
+      type = string
     }))
   }))
 

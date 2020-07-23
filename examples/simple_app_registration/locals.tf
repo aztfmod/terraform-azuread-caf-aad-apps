@@ -1,11 +1,11 @@
 
 locals {
-  convention       = "cafrandom"
-  name             = "caftest-aad"
-  location         = "southeastasia"
-  prefix           = ""
-  max_length       = ""
-  postfix          = ""
+  convention = "cafrandom"
+  name       = "caftest-aad"
+  location   = "southeastasia"
+  prefix     = ""
+  max_length = ""
+  postfix    = ""
 
   resource_groups = {
     test = {
@@ -34,12 +34,15 @@ locals {
     caf_launchpad = {
       convention              = "cafrandom"
       useprefix               = true
-      ad_application_name     = "caf_launchpad_level0-security-launchpad"
-      password_expire_in_days = 60
-      tenant_name             = "terraformdev.onmicrosoft.com"
+      application_name        = "caf_launchpad_level0"
+      password_expire_in_days = 180
       keyvault = {
-        keyvault_key       = "launchpad"
-        secret_permissions = ["Get", "List", "Set", "Delete"]
+        keyvault_key  = "launchpad"
+        secret_prefix = "caf-launchpad-level0"
+        access_policies = {
+          key_permissions    = []
+          secret_permissions = ["Get", "List", "Set", "Delete"]
+        }
       }
     }
 
@@ -52,15 +55,18 @@ locals {
       tenant_name             = "terraformdev.onmicrosoft.com"
       reply_urls              = ["https://localhost"]
       keyvault = {
-        keyvault_key       = "launchpad"
-        secret_permissions = ["Get", "Set"]
+        keyvault_key  = "launchpad"
+        secret_prefix = "caf-launchpad-level0"
+        access_policies = {
+          key_permissions    = []
+          secret_permissions = ["Get", "List", "Set", "Delete"]
+        }
       }
     }
 
   }
 
   aad_api_permissions = {
-
     azure_devops = {
       azure_devops_service = {
         resource_app_id = "499b84ac-1321-427f-aa17-267ca6975798"
